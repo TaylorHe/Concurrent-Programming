@@ -19,7 +19,7 @@ public class Exercise {
 	}
 	/**
 	 * Generates a random exercise to be performed.
-	 * @return
+	 * @return Exercise
 	 */
 	public static Exercise generateRandom(Map<WeightPlateSize, Integer> weight){
 		return null;

@@ -12,8 +12,6 @@ public class Gym implements Runnable {
 	private Set<Integer> clients;
 	private ExecutorService executor;
 	
-	public enum WeightPlateSize{SMALL_3KG, MEDIUM_5KG, LARGE_10KG};
-	
 	
 	public Gym() {
 		noOfWeightPlates = new HashMap<WeightPlateSize, Integer>();

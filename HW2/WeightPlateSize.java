@@ -1,5 +1,21 @@
 package HW2;
 
-public class WeightPlateSize {
+import java.util.List;
+import java.util.*;
 
-}
+public enum WeightPlateSize{SMALL_3KG, MEDIUM_5KG, LARGE_10KG;
+	
+	/* 
+	 * Found a better way that caches a list of values instead of making a new list
+	 * every time when picking a random number from the list.
+	 * 
+	 * source: https://stackoverflow.com/questions/1972392/java-pick-a-random-value-from-an-enum
+	 */
+	private static final List<WeightPlateSize> VALUES = Collections.unmodifiableList(Arrays.asList(values()));
+	private static final int SIZE = VALUES.size();
+	private static final Random RANDOM = new Random();
+
+	public static WeightPlateSize randomPlate() {
+		return VALUES.get(RANDOM.nextInt(SIZE));
+	}
+};
