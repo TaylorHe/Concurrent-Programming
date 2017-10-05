@@ -1,5 +1,8 @@
 package HW2;
 
+//Taylor He
+//I pledge my honor that I have abided by the Stevens Honor System.
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

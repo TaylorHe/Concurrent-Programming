@@ -1,5 +1,9 @@
 package HW2;
 
+//Taylor He
+//I pledge my honor that I have abided by the Stevens Honor System.
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +19,7 @@ public class Client {
 	 */
 	public Client(int id){
 		this.id = id;
+		routine = new ArrayList<Exercise>();
 	}
 	
 	/**
@@ -35,4 +40,19 @@ public class Client {
 		return null;
 	}
 	
+	/**
+	 * Returns the Client's id
+	 * @return int
+	 */
+	public int getId() {
+		return id;
+	}
+	
+	/**
+	 * Returns the Client's routine
+	 * @return List<Exercise>
+	 */
+	public List<Exercise> getRoutine() {
+		return routine;
+	}
 }

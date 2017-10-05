@@ -1,5 +1,10 @@
 package HW2;
 
+import java.util.HashMap;
+
+//Taylor He
+//I pledge my honor that I have abided by the Stevens Honor System.
+
 import java.util.Map;
 
 public class Exercise {
@@ -24,4 +29,29 @@ public class Exercise {
 	public static Exercise generateRandom(Map<WeightPlateSize, Integer> weight){
 		return null;
 	}
+
+	/**
+	 * Returns the Apparatus Type
+	 * @return ApparatusType
+	 */
+	public ApparatusType getApparatusType() {
+		return at;
+	}
+	
+	/**
+	 * Returns the weight plate sizes
+	 * @return Map<WeightPlateSize,Integer>
+	 */
+	public Map<WeightPlateSize,Integer> getWeightPlateSize() {
+		return weight;
+	}
+	
+	/**
+	 * Returns the duration of the routine
+	 * @return int
+	 */
+	public int getDuration() {
+		return duration;
+	}
+
 }

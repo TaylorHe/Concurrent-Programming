@@ -1,5 +1,8 @@
 package HW2;
 
+//Taylor He
+//I pledge my honor that I have abided by the Stevens Honor System.
+
 public class AssignmentTwo {
 	/*
 	 * Starts a Gym thread 
