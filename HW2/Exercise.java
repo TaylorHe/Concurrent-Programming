@@ -6,6 +6,7 @@ import java.util.HashMap;
 //I pledge my honor that I have abided by the Stevens Honor System.
 
 import java.util.Map;
+import java.util.Random;
 
 public class Exercise {
 	private ApparatusType at;
@@ -27,7 +28,18 @@ public class Exercise {
 	 * @return Exercise
 	 */
 	public static Exercise generateRandom(Map<WeightPlateSize, Integer> weight){
-		return null;
+		Map<WeightPlateSize, Integer> tempWeight = new HashMap<WeightPlateSize, Integer>();
+		Random r = new Random();
+		// For every key in Map tempWeight, we must generate a random Integer
+		for(WeightPlateSize p : tempWeight.keySet()){
+			// For non-zero random, we can random from 0 to size-1 and then add 1
+			// r.nextInt is exclusive, so we don't need a -1
+			tempWeight.put(p, r.nextInt(weight.get(p)) + 1);
+		}
+		//The duration of each exercise should be anything reasonable, say 25
+		int tempDuration = r.nextInt(25) + 1;
+		
+		return new Exercise(ApparatusType.randomApparatusType(), tempWeight, tempDuration);
 	}
 
 	/**

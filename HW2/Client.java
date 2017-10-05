@@ -4,8 +4,10 @@ package HW2;
 //I pledge my honor that I have abided by the Stevens Honor System.
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class Client {
 	// Every client has an id
@@ -33,11 +35,10 @@ public class Client {
 	/**
 	 * Randomly creates a Client id and routine.
 	 * @param id
-	 * @param noOfWeightPlates
 	 * @return Client 
 	 */
-	public static Client generateRandom(int id, Map<WeightPlateSize, Integer> noOfWeightPlates){
-		return null;
+	public static Client generateRandom(int id){
+		return new Client(id);
 	}
 	
 	/**
