@@ -6,10 +6,10 @@ public class AssignmentTwo {
 	 * @param args
 	 */
 	public static void main(String[] args){
-		Thread t = new Thread(new Gym());
-		t.start();
+		Thread thread = new Thread(new Gym());
+		thread.start();
 		try {
-			t.join();
+			thread.join();
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -1,7 +1,9 @@
 package HW2;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.*;
+import java.util.Random;
 
 public enum WeightPlateSize{SMALL_3KG, MEDIUM_5KG, LARGE_10KG;
 	
@@ -15,7 +17,7 @@ public enum WeightPlateSize{SMALL_3KG, MEDIUM_5KG, LARGE_10KG;
 	private static final int SIZE = VALUES.size();
 	private static final Random RANDOM = new Random();
 
-	public static WeightPlateSize randomPlate() {
+	public static WeightPlateSize randomWeightPlateSize() {
 		return VALUES.get(RANDOM.nextInt(SIZE));
 	}
 };
