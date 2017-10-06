@@ -31,7 +31,7 @@ public class Client implements Runnable {
 	public void addExercise(Exercise e){
 		this.routine.add(e);
 	}
-	
+
 	/**
 	 * Randomly creates a Client id and routine.
 	 * @param id
@@ -47,21 +47,6 @@ public class Client implements Runnable {
 		return client;
 	}
 
-	/**
-	 * Returns the Client's id
-	 * @return int
-	 */
-	public int getId() {
-		return id;
-	}
-
-	/**
-	 * Returns the Client's routine
-	 * @return List<Exercise>
-	 */
-	public List<Exercise> getRoutine() {
-		return routine;
-	}
 
 	/**
 	 * 
@@ -71,63 +56,101 @@ public class Client implements Runnable {
 	 */
 	private void acquireAndExercise(Map<WeightPlateSize, Integer> weightMap, ApparatusType at, Exercise e){
 		try {
+			// Number of weights needed
 			int numSmallWeights = weightMap.get(WeightPlateSize.SMALL_3KG);
-			int numMedWeights = weightMap.get(WeightPlateSize.SMALL_3KG);
-			int numLargeWeights = weightMap.get(WeightPlateSize.SMALL_3KG);
+			int numMedWeights = weightMap.get(WeightPlateSize.MEDIUM_5KG);
+			int numLargeWeights = weightMap.get(WeightPlateSize.LARGE_10KG);
+			int numRemainWeights[] = new int[3];
+			// Check if there are enough plates. Must check while blocking access to plate modification.
+			boolean hasEnoughWeights = false;
+			//System.out.println("Client " + id + "is requesting resource: " + numSmallWeights + ", " + numMedWeights + ", " + numLargeWeights);
 			
-			int numRemainWeights[] = {Gym.remainingNoOfWeightPlates.get(WeightPlateSize.SMALL_3KG),
-					Gym.remainingNoOfWeightPlates.get(WeightPlateSize.MEDIUM_5KG),
-					Gym.remainingNoOfWeightPlates.get(WeightPlateSize.LARGE_10KG)};
-			// Check if there are enough plates.
-			if (numSmallWeights <= numRemainWeights[0] &&
-					numMedWeights   <= numRemainWeights[1] &&
-					numLargeWeights <= numRemainWeights[2]) {
-				// Acquire each weight and modify Gym.remaingNoOfWeights per acquire
-				try {
-					Gym.sPlateAccess.acquire();
-					for(int i = 0; i < numSmallWeights; i++) {
-						Gym.sPlateMutex.acquire();
-						Gym.remainingNoOfWeightPlates.put(WeightPlateSize.SMALL_3KG, numRemainWeights[0]--);
-					}
-					Gym.sPlateAccess.release();
-					
-					Gym.mPlateAccess.acquire();
-					for(int i = 0; i < numMedWeights; i++) {
-						Gym.mPlateMutex.acquire();
-						Gym.remainingNoOfWeightPlates.put(WeightPlateSize.MEDIUM_5KG, numRemainWeights[1]--);
-					}
-					Gym.mPlateAccess.release();
-					
-					Gym.lPlateAccess.acquire();
-					for(int i = 0; i < numLargeWeights; i++) {
-						Gym.lPlateMutex.acquire();
-						Gym.remainingNoOfWeightPlates.put(WeightPlateSize.LARGE_10KG, numRemainWeights[2]--);
-					}
-					Gym.lPlateAccess.release();
-					
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
-				
-				System.out.println("Client #" + id + " will use " + at + " for " + e.getDuration() + " minutes.");
-				Thread.sleep(e.getDuration());
-				System.out.println("Client #" + id + " finished using " + at + " after " + e.getDuration() + " minutes.");
-
-				// Release all the weights
-				for(int i = 0; i < numSmallWeights; i++) {
-					Gym.sPlateMutex.release();
-					Gym.remainingNoOfWeightPlates.put(WeightPlateSize.SMALL_3KG, numRemainWeights[0]++);
-				}
-				for(int i = 0; i < numMedWeights; i++) {
-					Gym.mPlateMutex.release();
-					Gym.remainingNoOfWeightPlates.put(WeightPlateSize.MEDIUM_5KG, numRemainWeights[1]++);
-				}
-				for(int i = 0; i < numLargeWeights; i++) {
-					Gym.lPlateMutex.release();
-					Gym.remainingNoOfWeightPlates.put(WeightPlateSize.LARGE_10KG, numRemainWeights[2]++);
-				}
-				
+			while(true){
+				Gym.allPlateAccess.acquire();
+				Gym.sPlateAccess.acquire();
+				Gym.mPlateAccess.acquire();
+				Gym.lPlateAccess.acquire();
+				numRemainWeights[0] = Gym.remainingNoOfWeightPlates.get(WeightPlateSize.SMALL_3KG);
+				numRemainWeights[1] = Gym.remainingNoOfWeightPlates.get(WeightPlateSize.MEDIUM_5KG);
+				numRemainWeights[2] = Gym.remainingNoOfWeightPlates.get(WeightPlateSize.LARGE_10KG);
+				hasEnoughWeights =
+						numSmallWeights <= numRemainWeights[0] &&
+						numMedWeights   <= numRemainWeights[1] &&
+						numLargeWeights <= numRemainWeights[2];
+				if (hasEnoughWeights){
+					break;
+				} 
+				Gym.sPlateAccess.release();
+				Gym.mPlateAccess.release();
+				Gym.lPlateAccess.release();
+				Gym.allPlateAccess.release();
 			}
+			// Acquire each weight and modify Gym.remaingNoOfWeights per acquire. 
+			try {
+				for(int i = 0; i < numSmallWeights; i++) {
+					Gym.sPlateMutex.acquire();
+					Gym.remainingNoOfWeightPlates.put(WeightPlateSize.SMALL_3KG, --numRemainWeights[0]);
+				}
+				
+				for(int i = 0; i < numMedWeights; i++) {
+					Gym.mPlateMutex.acquire();
+					Gym.remainingNoOfWeightPlates.put(WeightPlateSize.MEDIUM_5KG, --numRemainWeights[1]);
+				}
+				
+				for(int i = 0; i < numLargeWeights; i++) {
+					Gym.lPlateMutex.acquire();
+					Gym.remainingNoOfWeightPlates.put(WeightPlateSize.LARGE_10KG, --numRemainWeights[2]);
+				}
+				//System.out.println("Client " + id + " leaves: " + numRemainWeights[0] + ", " + numRemainWeights[1] + ", " + numRemainWeights[2]);
+				
+				Gym.sPlateAccess.release(); // Release the access when done.
+				Gym.mPlateAccess.release();
+				Gym.lPlateAccess.release();
+				Gym.allPlateAccess.release();
+				
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
+
+			System.out.println("Client #" + id + " will use " + at + " for " + e.getDuration() + " minutes.");
+			//System.out.println("Resources left: " + Gym.remainingNoOfWeightPlates.get(WeightPlateSize.SMALL_3KG) + ", " + Gym.remainingNoOfWeightPlates.get(WeightPlateSize.MEDIUM_5KG) + ", " + Gym.remainingNoOfWeightPlates.get(WeightPlateSize.LARGE_10KG));
+			
+			Thread.sleep(e.getDuration());
+			System.out.println("Client #" + id + " finished using " + at + " after " + e.getDuration() + " minutes.");
+			//System.out.println("stuck here1");
+			//Gym.allPlateAccess.acquire();
+			//System.out.println("stuck here1.5");
+			Gym.sPlateAccess.acquire();
+			int numRemain = Gym.remainingNoOfWeightPlates.get(WeightPlateSize.SMALL_3KG);
+			for(int i = 0; i < numSmallWeights; i++) {
+				Gym.sPlateMutex.release();
+				Gym.remainingNoOfWeightPlates.put(WeightPlateSize.SMALL_3KG, ++numRemain);
+			}
+			
+			Gym.sPlateAccess.release();
+			//System.out.println("stuck here2");
+			
+			Gym.mPlateAccess.acquire();
+			numRemain = Gym.remainingNoOfWeightPlates.get(WeightPlateSize.MEDIUM_5KG);
+			for(int i = 0; i < numMedWeights; i++) {
+				Gym.mPlateMutex.release();
+				Gym.remainingNoOfWeightPlates.put(WeightPlateSize.MEDIUM_5KG, ++numRemain);
+					
+			}
+			Gym.mPlateAccess.release();
+			//System.out.println("stuck here3");
+			
+			Gym.lPlateAccess.acquire();
+			numRemain = Gym.remainingNoOfWeightPlates.get(WeightPlateSize.LARGE_10KG);
+			for(int i = 0; i < numLargeWeights; i++) {
+				Gym.lPlateMutex.release();
+				Gym.remainingNoOfWeightPlates.put(WeightPlateSize.LARGE_10KG, ++numRemain);
+			}
+			Gym.lPlateAccess.release();
+			//Gym.allPlateAccess.release();
+			
+			//System.out.println("Resources left: " + Gym.remainingNoOfWeightPlates.get(WeightPlateSize.SMALL_3KG) + ", " + Gym.remainingNoOfWeightPlates.get(WeightPlateSize.MEDIUM_5KG) + ", " + Gym.remainingNoOfWeightPlates.get(WeightPlateSize.LARGE_10KG));
+					
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
@@ -137,8 +160,8 @@ public class Client implements Runnable {
 		// For each exercise in the routine, 
 		//     1. Acquire the permission for the machine
 		//     2. Acquire the weights, exercise, and release the weights
-		//     3. We should also remove the id from the client set
-		
+		//     3. We should also remove the id from the client set since it is done
+
 		for(Exercise e : routine){
 			Map<WeightPlateSize, Integer> weightMap = e.getWeightPlateSizeMap();
 			// Now we need a switch when attempting to acquire each machine.
@@ -153,7 +176,7 @@ public class Client implements Runnable {
 				}
 				Gym.LEGPRESSMACHINE.release();
 				break;
-				
+
 			case BARBELL:
 				try {
 					Gym.BARBELL.acquire();
@@ -163,7 +186,7 @@ public class Client implements Runnable {
 				}
 				Gym.BARBELL.release();
 				break;
-				
+
 			case HACKSQUATMACHINE:
 				try {
 					Gym.HACKSQUATMACHINE.acquire();
@@ -173,7 +196,7 @@ public class Client implements Runnable {
 				}
 				Gym.HACKSQUATMACHINE.release();
 				break;
-				
+
 			case LEGEXTENSIONMACHINE:
 				try {
 					Gym.LEGEXTENSIONMACHINE.acquire();
@@ -183,7 +206,7 @@ public class Client implements Runnable {
 				}
 				Gym.LEGEXTENSIONMACHINE.release();
 				break;
-				
+
 			case LEGCURLMACHINE:
 				try {
 					Gym.LEGCURLMACHINE.acquire();
@@ -193,7 +216,7 @@ public class Client implements Runnable {
 				}
 				Gym.LEGCURLMACHINE.release();
 				break;
-				
+
 			case LATPULLDOWNMACHINE:
 				try {
 					Gym.LATPULLDOWNMACHINE.acquire();
@@ -203,7 +226,7 @@ public class Client implements Runnable {
 				}
 				Gym.LATPULLDOWNMACHINE.release();
 				break;
-				
+
 			case PECDECKMACHINE:
 				try {
 					Gym.PECDECKMACHINE.acquire();
@@ -213,7 +236,7 @@ public class Client implements Runnable {
 				}
 				Gym.PECDECKMACHINE.release();
 				break;
-			
+
 			case CABLECROSSOVERMACHINE:
 				try {
 					Gym.CABLECROSSOVERMACHINE.acquire();
@@ -223,12 +246,7 @@ public class Client implements Runnable {
 				}
 				Gym.CABLECROSSOVERMACHINE.release();
 				break;
-			
 			}
-
-
-
-
 		}
 
 

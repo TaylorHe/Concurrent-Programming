@@ -1,3 +1,4 @@
+package HW1;
 /*
  * Taylor He
  * CS 511
@@ -5,7 +6,6 @@
  * September 7, 2017
  */
 
-package HW1;
 import java.util.ArrayList;
 import java.util.List;
 
