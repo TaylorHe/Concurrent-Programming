@@ -13,6 +13,13 @@ public enum ApparatusType {
 	LEGCURLMACHINE, LATPULLDOWNMACHINE, PECDECKMACHINE,
 	CABLECROSSOVERMACHINE;
 	
+	/* 
+	 * Found a better way that caches a list of values instead of making a new list
+	 * every time when picking a random number from the list.
+	 * 
+	 * source: https://stackoverflow.com/questions/1972392/java-pick-a-random-value-from-an-enum
+	 */
+	
 	private static final List<ApparatusType> VALUES = Collections.unmodifiableList(Arrays.asList(values()));
 	private static final int SIZE = VALUES.size();
 	private static final Random RANDOM = new Random();
