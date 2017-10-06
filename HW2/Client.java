@@ -71,8 +71,6 @@ public class Client implements Runnable {
 	 */
 	private void acquireAndExercise(Map<WeightPlateSize, Integer> weightMap, ApparatusType at, Exercise e){
 		try {
-			// Acquire the mutex to modify Gym.remainingNoOfWeightPlates
-			Gym.plateMutex.acquire();
 			int numSmallWeights = weightMap.get(WeightPlateSize.SMALL_3KG);
 			int numMedWeights = weightMap.get(WeightPlateSize.SMALL_3KG);
 			int numLargeWeights = weightMap.get(WeightPlateSize.SMALL_3KG);
@@ -86,18 +84,27 @@ public class Client implements Runnable {
 					numLargeWeights <= numRemainWeights[2]) {
 				// Acquire each weight and modify Gym.remaingNoOfWeights per acquire
 				try {
+					Gym.sPlateAccess.acquire();
 					for(int i = 0; i < numSmallWeights; i++) {
 						Gym.sPlateMutex.acquire();
 						Gym.remainingNoOfWeightPlates.put(WeightPlateSize.SMALL_3KG, numRemainWeights[0]--);
 					}
+					Gym.sPlateAccess.release();
+					
+					Gym.mPlateAccess.acquire();
 					for(int i = 0; i < numMedWeights; i++) {
 						Gym.mPlateMutex.acquire();
 						Gym.remainingNoOfWeightPlates.put(WeightPlateSize.MEDIUM_5KG, numRemainWeights[1]--);
 					}
+					Gym.mPlateAccess.release();
+					
+					Gym.lPlateAccess.acquire();
 					for(int i = 0; i < numLargeWeights; i++) {
 						Gym.lPlateMutex.acquire();
 						Gym.remainingNoOfWeightPlates.put(WeightPlateSize.LARGE_10KG, numRemainWeights[2]--);
 					}
+					Gym.lPlateAccess.release();
+					
 				} catch (InterruptedException e1) {
 					e1.printStackTrace();
 				}
@@ -120,7 +127,6 @@ public class Client implements Runnable {
 					Gym.remainingNoOfWeightPlates.put(WeightPlateSize.LARGE_10KG, numRemainWeights[2]++);
 				}
 				
-				Gym.plateMutex.release();
 			}
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
@@ -145,7 +151,79 @@ public class Client implements Runnable {
 				} catch (InterruptedException e1) {
 					e1.printStackTrace();
 				}
+				Gym.LEGPRESSMACHINE.release();
 				break;
+				
+			case BARBELL:
+				try {
+					Gym.BARBELL.acquire();
+					acquireAndExercise(weightMap, a, e);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				Gym.BARBELL.release();
+				break;
+				
+			case HACKSQUATMACHINE:
+				try {
+					Gym.HACKSQUATMACHINE.acquire();
+					acquireAndExercise(weightMap, a, e);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				Gym.HACKSQUATMACHINE.release();
+				break;
+				
+			case LEGEXTENSIONMACHINE:
+				try {
+					Gym.LEGEXTENSIONMACHINE.acquire();
+					acquireAndExercise(weightMap, a, e);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				Gym.LEGEXTENSIONMACHINE.release();
+				break;
+				
+			case LEGCURLMACHINE:
+				try {
+					Gym.LEGCURLMACHINE.acquire();
+					acquireAndExercise(weightMap, a, e);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				Gym.LEGCURLMACHINE.release();
+				break;
+				
+			case LATPULLDOWNMACHINE:
+				try {
+					Gym.LATPULLDOWNMACHINE.acquire();
+					acquireAndExercise(weightMap, a, e);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				Gym.LATPULLDOWNMACHINE.release();
+				break;
+				
+			case PECDECKMACHINE:
+				try {
+					Gym.PECDECKMACHINE.acquire();
+					acquireAndExercise(weightMap, a, e);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				Gym.PECDECKMACHINE.release();
+				break;
+			
+			case CABLECROSSOVERMACHINE:
+				try {
+					Gym.CABLECROSSOVERMACHINE.acquire();
+					acquireAndExercise(weightMap, a, e);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				Gym.CABLECROSSOVERMACHINE.release();
+				break;
+			
 			}
 
 

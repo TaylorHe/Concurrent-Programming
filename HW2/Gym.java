@@ -14,7 +14,7 @@ import java.util.concurrent.Semaphore;
 
 public class Gym implements Runnable {
 	private static final int GYM_SIZE = 30;
-	private static final int GYM_REGISTERED_CLIENTS = 10000;
+	private static final int GYM_REGISTERED_CLIENTS = 1000;
 	private Map<WeightPlateSize, Integer> noOfWeightPlates;
 	private static Map<WeightPlateSize, Integer> tempNoOfWeightPlates; // exists so that it can be used as a static getter
 	static Map<WeightPlateSize, Integer> remainingNoOfWeightPlates; // Used to calculate 
@@ -32,7 +32,9 @@ public class Gym implements Runnable {
 	final static Semaphore PECDECKMACHINE = new Semaphore(5);
 	final static Semaphore CABLECROSSOVERMACHINE = new Semaphore(5);
 	// Binary semaphore used to acquire the permissions to get plates.
-	final static Semaphore plateMutex= new Semaphore(1);
+	final static Semaphore lPlateAccess= new Semaphore(1);
+	final static Semaphore mPlateAccess= new Semaphore(1);
+	final static Semaphore sPlateAccess= new Semaphore(1);
 	final static Semaphore lPlateMutex= new Semaphore(75);
 	final static Semaphore mPlateMutex= new Semaphore(90);
 	final static Semaphore sPlateMutex= new Semaphore(110);
@@ -50,9 +52,9 @@ public class Gym implements Runnable {
 		tempNoOfWeightPlates.put(WeightPlateSize.SMALL_3KG, 110);
 		
 		remainingNoOfWeightPlates = new HashMap<WeightPlateSize, Integer>();
-		noOfWeightPlates.put(WeightPlateSize.LARGE_10KG, 75);
-		noOfWeightPlates.put(WeightPlateSize.MEDIUM_5KG, 90);
-		noOfWeightPlates.put(WeightPlateSize.SMALL_3KG, 110);
+		remainingNoOfWeightPlates.put(WeightPlateSize.LARGE_10KG, 75);
+		remainingNoOfWeightPlates.put(WeightPlateSize.MEDIUM_5KG, 90);
+		remainingNoOfWeightPlates.put(WeightPlateSize.SMALL_3KG, 110);
 		
 		r = new Random();
 		clients = new HashSet<Integer>();
@@ -68,9 +70,10 @@ public class Gym implements Runnable {
 		int id = 0;
 		for(int i = 0; i < GYM_REGISTERED_CLIENTS; i++) {
 			// The gym should generate clients randomly and have them execute their routines.
-			id = r.nextInt(GYM_REGISTERED_CLIENTS) + 1;
-			// Check if random client ID is in the set
-			if(clients.add(id)) {
+			id = r.nextInt(GYM_REGISTERED_CLIENTS) + 1; 
+			if(clients.add(id)) {		// Check if random client ID is in the set
+				//System.out.println("new client with id: " + id);
+				
 				Client client = Client.generateRandom(id);
 				executor.execute(client);
 			}	
