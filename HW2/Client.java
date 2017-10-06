@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-public class Client {
+public class Client implements Runnable {
 	// Every client has an id
 	private int id;
 	// A routine is a list of Exercises
@@ -38,6 +38,7 @@ public class Client {
 	 * @return Client 
 	 */
 	public static Client generateRandom(int id){
+		// Not sure what this is used for, but it's needed in to UML diagram.
 		return new Client(id);
 	}
 	
@@ -55,5 +56,40 @@ public class Client {
 	 */
 	public List<Exercise> getRoutine() {
 		return routine;
+	}
+
+	private void acquireAndExercise(int numSmallWeights, int numMedWeights, int numLargeWeights){
+		// Check if there are enough plates.
+		if(numSmallWeights <= Gym.remainingNoOfWeightPlates.get(WeightPlateSize.SMALL_3KG)
+			&& numMedWeights <= Gym.remainingNoOfWeightPlates.get(WeightPlateSize.MEDIUM_5KG)
+			&& numLargeWeights <= Gym.remainingNoOfWeightPlates.get(WeightPlateSize.LARGE_10KG)) {
+			
+		}
+		
+	}
+	@Override
+	public void run() {
+		int numRoutines = routine.size();
+		for(int i = 0; i < numRoutines; i++){
+			Exercise e = routine.get(i);
+			Map<WeightPlateSize, Integer> weights = e.getWeightPlateSize();
+			// Now we need a switch when attempting to acquire each machine.
+			switch (e.getApparatusType()){
+			case LEGPRESSMACHINE:
+				try {
+					Gym.LEGPRESSMACHINE.acquire();
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				try {
+					
+				}
+			}
+			
+			
+		}
+		
+		
 	}
 }
