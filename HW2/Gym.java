@@ -14,7 +14,7 @@ import java.util.concurrent.Semaphore;
 
 public class Gym implements Runnable {
 	private static final int GYM_SIZE = 30;
-	private static final int GYM_REGISTERED_CLIENTS = 100;
+	private static final int GYM_REGISTERED_CLIENTS = 10000;
 	
 	// Made the number of plates variables in case the Gym buys more or loses some.
 	private static final int NUM_SMALL_PLATES = 110;

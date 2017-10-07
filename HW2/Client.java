@@ -54,7 +54,7 @@ public class Client implements Runnable {
 	 * @param at The apparatus type
 	 * @param e The exercise
 	 */
-	private void acquireAndExercise(Map<WeightPlateSize, Integer> weightMap, ApparatusType at, Exercise e){
+	private void acquireAndExercise(Map<WeightPlateSize, Integer> weightMap, ApparatusType at, Exercise e, int routineNum){
 		try {
 			// Number of weights needed
 			int numSmallWeights = weightMap.get(WeightPlateSize.SMALL_3KG);
@@ -91,20 +91,17 @@ public class Client implements Runnable {
 					Gym.sPlateMutex.acquire();
 					Gym.remainingNoOfWeightPlates.put(WeightPlateSize.SMALL_3KG, --numRemainWeights[0]);
 				}
-				
+				Gym.sPlateAccess.release(); // Release the access when done.
 				for(int i = 0; i < numMedWeights; i++) {
 					Gym.mPlateMutex.acquire();
 					Gym.remainingNoOfWeightPlates.put(WeightPlateSize.MEDIUM_5KG, --numRemainWeights[1]);
 				}
-				
+				Gym.mPlateAccess.release();
 				for(int i = 0; i < numLargeWeights; i++) {
 					Gym.lPlateMutex.acquire();
 					Gym.remainingNoOfWeightPlates.put(WeightPlateSize.LARGE_10KG, --numRemainWeights[2]);
 				}
 				//System.out.println("Client " + id + " leaves: " + numRemainWeights[0] + ", " + numRemainWeights[1] + ", " + numRemainWeights[2]);
-				
-				Gym.sPlateAccess.release(); // Release the access when done.
-				Gym.mPlateAccess.release();
 				Gym.lPlateAccess.release();
 				Gym.allPlateAccess.release();
 				
@@ -112,7 +109,7 @@ public class Client implements Runnable {
 				e1.printStackTrace();
 			}
 
-			System.out.println("Client #" + id + " will use " + at + " for " + e.getDuration() + " minutes.");
+			System.out.println("Client #" + id + " will use " + at + " for " + e.getDuration() + " minutes. Routine " + routineNum + " out of " +routine.size() + ".");
 			//System.out.println("Resources left: " + Gym.remainingNoOfWeightPlates.get(WeightPlateSize.SMALL_3KG) + ", " + Gym.remainingNoOfWeightPlates.get(WeightPlateSize.MEDIUM_5KG) + ", " + Gym.remainingNoOfWeightPlates.get(WeightPlateSize.LARGE_10KG));
 			
 			Thread.sleep(e.getDuration());
@@ -124,19 +121,19 @@ public class Client implements Runnable {
 			int numRemain = Gym.remainingNoOfWeightPlates.get(WeightPlateSize.SMALL_3KG);
 			for(int i = 0; i < numSmallWeights; i++) {
 				Gym.sPlateMutex.release();
-				Gym.remainingNoOfWeightPlates.put(WeightPlateSize.SMALL_3KG, ++numRemain);
 			}
+			Gym.remainingNoOfWeightPlates.put(WeightPlateSize.SMALL_3KG, numRemain + numSmallWeights);
 			
 			Gym.sPlateAccess.release();
 			//System.out.println("stuck here2");
 			
 			Gym.mPlateAccess.acquire();
-			numRemain = Gym.remainingNoOfWeightPlates.get(WeightPlateSize.MEDIUM_5KG);
+			numRemain = Gym.remainingNoOfWeightPlates.get(WeightPlateSize.MEDIUM_5KG); 
 			for(int i = 0; i < numMedWeights; i++) {
-				Gym.mPlateMutex.release();
-				Gym.remainingNoOfWeightPlates.put(WeightPlateSize.MEDIUM_5KG, ++numRemain);
-					
+				Gym.mPlateMutex.release();	
 			}
+			Gym.remainingNoOfWeightPlates.put(WeightPlateSize.MEDIUM_5KG, numRemain + numMedWeights);
+			
 			Gym.mPlateAccess.release();
 			//System.out.println("stuck here3");
 			
@@ -144,8 +141,8 @@ public class Client implements Runnable {
 			numRemain = Gym.remainingNoOfWeightPlates.get(WeightPlateSize.LARGE_10KG);
 			for(int i = 0; i < numLargeWeights; i++) {
 				Gym.lPlateMutex.release();
-				Gym.remainingNoOfWeightPlates.put(WeightPlateSize.LARGE_10KG, ++numRemain);
 			}
+			Gym.remainingNoOfWeightPlates.put(WeightPlateSize.LARGE_10KG, numRemain + numLargeWeights);
 			Gym.lPlateAccess.release();
 			//Gym.allPlateAccess.release();
 			
@@ -161,16 +158,17 @@ public class Client implements Runnable {
 		//     1. Acquire the permission for the machine
 		//     2. Acquire the weights, exercise, and release the weights
 		//     3. We should also remove the id from the client set since it is done
-
+		int routineNumber = 0;
 		for(Exercise e : routine){
 			Map<WeightPlateSize, Integer> weightMap = e.getWeightPlateSizeMap();
 			// Now we need a switch when attempting to acquire each machine.
+			routineNumber++;
 			ApparatusType a = e.getApparatusType();
 			switch (a) {
 			case LEGPRESSMACHINE:
 				try {
 					Gym.LEGPRESSMACHINE.acquire();
-					acquireAndExercise(weightMap, a, e);
+					acquireAndExercise(weightMap, a, e, routineNumber);
 				} catch (InterruptedException e1) {
 					e1.printStackTrace();
 				}
@@ -180,7 +178,7 @@ public class Client implements Runnable {
 			case BARBELL:
 				try {
 					Gym.BARBELL.acquire();
-					acquireAndExercise(weightMap, a, e);
+					acquireAndExercise(weightMap, a, e, routineNumber);
 				} catch (InterruptedException e1) {
 					e1.printStackTrace();
 				}
@@ -190,7 +188,7 @@ public class Client implements Runnable {
 			case HACKSQUATMACHINE:
 				try {
 					Gym.HACKSQUATMACHINE.acquire();
-					acquireAndExercise(weightMap, a, e);
+					acquireAndExercise(weightMap, a, e, routineNumber);
 				} catch (InterruptedException e1) {
 					e1.printStackTrace();
 				}
@@ -200,7 +198,7 @@ public class Client implements Runnable {
 			case LEGEXTENSIONMACHINE:
 				try {
 					Gym.LEGEXTENSIONMACHINE.acquire();
-					acquireAndExercise(weightMap, a, e);
+					acquireAndExercise(weightMap, a, e, routineNumber);
 				} catch (InterruptedException e1) {
 					e1.printStackTrace();
 				}
@@ -210,7 +208,7 @@ public class Client implements Runnable {
 			case LEGCURLMACHINE:
 				try {
 					Gym.LEGCURLMACHINE.acquire();
-					acquireAndExercise(weightMap, a, e);
+					acquireAndExercise(weightMap, a, e, routineNumber);
 				} catch (InterruptedException e1) {
 					e1.printStackTrace();
 				}
@@ -220,7 +218,7 @@ public class Client implements Runnable {
 			case LATPULLDOWNMACHINE:
 				try {
 					Gym.LATPULLDOWNMACHINE.acquire();
-					acquireAndExercise(weightMap, a, e);
+					acquireAndExercise(weightMap, a, e, routineNumber);
 				} catch (InterruptedException e1) {
 					e1.printStackTrace();
 				}
@@ -230,7 +228,7 @@ public class Client implements Runnable {
 			case PECDECKMACHINE:
 				try {
 					Gym.PECDECKMACHINE.acquire();
-					acquireAndExercise(weightMap, a, e);
+					acquireAndExercise(weightMap, a, e, routineNumber);
 				} catch (InterruptedException e1) {
 					e1.printStackTrace();
 				}
@@ -240,7 +238,7 @@ public class Client implements Runnable {
 			case CABLECROSSOVERMACHINE:
 				try {
 					Gym.CABLECROSSOVERMACHINE.acquire();
-					acquireAndExercise(weightMap, a, e);
+					acquireAndExercise(weightMap, a, e, routineNumber);
 				} catch (InterruptedException e1) {
 					e1.printStackTrace();
 				}

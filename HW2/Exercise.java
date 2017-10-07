@@ -35,11 +35,10 @@ public class Exercise {
 		// For every key in Map tempWeight, we must generate a random Integer
 		for(WeightPlateSize p : weight.keySet()){
 			// For non-zero random, we can random from 0 to size-1 and then add 1
-			// r.nextInt is exclusive, so we don't need a -1
-			tempWeight.put(p, r.nextInt(weight.get(p)) + 1);
+			tempWeight.put(p, r.nextInt(10) + 1);
 		}
-		//The duration of each exercise should be anything reasonable, say random under 25 but > 0
-		int tempDuration = r.nextInt(25) + 1;
+		//The duration of each exercise should be anything reasonable, say random under 15 but > 0
+		int tempDuration = r.nextInt(15) + 1;
 		return new Exercise(ApparatusType.randomApparatusType(), tempWeight, tempDuration);
 	}
 
