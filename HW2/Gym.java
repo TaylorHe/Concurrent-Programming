@@ -21,34 +21,38 @@ public class Gym implements Runnable {
 	private static final int NUM_MEDIUM_PLATES = 90;
 	private static final int NUM_LARGE_PLATES = 75;
 	
+	// Technically there should be a variable for the number of each machine type, but they're all 5 anyway
+	private static final int NUM_MACHINE_TYPE = 5; 
+	
 	private Map<WeightPlateSize, Integer> noOfWeightPlates;
 	static Map<WeightPlateSize, Integer> remainingNoOfWeightPlates; // Used to calculate remaining plates 
-	// tempNoOfWeightPlates exists so that it can be used as a static getter for Client.generateRandom. It's just a copy of noOfWeightPlates
-	private static Map<WeightPlateSize, Integer> tempNoOfWeightPlates; 
+	private static Map<WeightPlateSize, Integer> tempNoOfWeightPlates; // pointer to noOfWeightPlates; see Gym.getNoWeightPlates()
+	static Map<ApparatusType, Semaphore> apparatusTypeSemaphoreMap; // Map of apparatusType to Semaphore to prevent repeated code
 	
 	private Set<Integer> clients;
 	private ExecutorService executor;
 	private Random r;
 	static Map<Integer, ApparatusType> apparatusMap = new HashMap<Integer, ApparatusType>();
+	
 	// There are only 5 of each gym apparatus type
-	final static Semaphore LEGPRESSMACHINE = new Semaphore(5);
-	final static Semaphore BARBELL = new Semaphore(5);
-	final static Semaphore HACKSQUATMACHINE = new Semaphore(5);
-	final static Semaphore LEGEXTENSIONMACHINE = new Semaphore(5);
-	final static Semaphore LEGCURLMACHINE = new Semaphore(5);
-	final static Semaphore LATPULLDOWNMACHINE = new Semaphore(5);
-	final static Semaphore PECDECKMACHINE = new Semaphore(5);
-	final static Semaphore CABLECROSSOVERMACHINE = new Semaphore(5);
+	final static Semaphore LEGPRESSMACHINE = new Semaphore(NUM_MACHINE_TYPE);
+	final static Semaphore BARBELL = new Semaphore(NUM_MACHINE_TYPE);
+	final static Semaphore HACKSQUATMACHINE = new Semaphore(NUM_MACHINE_TYPE);
+	final static Semaphore LEGEXTENSIONMACHINE = new Semaphore(NUM_MACHINE_TYPE);
+	final static Semaphore LEGCURLMACHINE = new Semaphore(NUM_MACHINE_TYPE);
+	final static Semaphore LATPULLDOWNMACHINE = new Semaphore(NUM_MACHINE_TYPE);
+	final static Semaphore PECDECKMACHINE = new Semaphore(NUM_MACHINE_TYPE);
+	final static Semaphore CABLECROSSOVERMACHINE = new Semaphore(NUM_MACHINE_TYPE);
 	// Binary semaphore used to acquire the permissions to get plates.
 	final static Semaphore lPlateAccess= new Semaphore(1);
 	final static Semaphore mPlateAccess= new Semaphore(1);
 	final static Semaphore sPlateAccess= new Semaphore(1);
-	final static Semaphore lPlateMutex= new Semaphore(NUM_LARGE_PLATES);
-	final static Semaphore mPlateMutex= new Semaphore(NUM_MEDIUM_PLATES);
-	final static Semaphore sPlateMutex= new Semaphore(NUM_SMALL_PLATES);
-	final static Semaphore allPlateAccess= new Semaphore(1);
+	final static Semaphore lPlates= new Semaphore(NUM_LARGE_PLATES);
+	final static Semaphore mPlates= new Semaphore(NUM_MEDIUM_PLATES);
+	final static Semaphore sPlates= new Semaphore(NUM_SMALL_PLATES);
 	
 	public Gym() {
+		// Initialize the the Maps
 		noOfWeightPlates = new HashMap<WeightPlateSize, Integer>();
 		noOfWeightPlates.put(WeightPlateSize.LARGE_10KG, NUM_LARGE_PLATES);
 		noOfWeightPlates.put(WeightPlateSize.MEDIUM_5KG, NUM_MEDIUM_PLATES);
@@ -59,12 +63,34 @@ public class Gym implements Runnable {
 		remainingNoOfWeightPlates.put(WeightPlateSize.MEDIUM_5KG, NUM_MEDIUM_PLATES);
 		remainingNoOfWeightPlates.put(WeightPlateSize.SMALL_3KG, NUM_SMALL_PLATES);
 		
+		// This is just a pointer noOfWeightPlates, since it won't be modified.
 		tempNoOfWeightPlates = noOfWeightPlates;
+		
+		// Map of ApparatusTypes to Semaphore so there's no switch or if/elseif with repeated code
+		apparatusTypeSemaphoreMap = new HashMap<ApparatusType, Semaphore>();
+		apparatusTypeSemaphoreMap.put(ApparatusType.LEGPRESSMACHINE, LEGPRESSMACHINE);
+		apparatusTypeSemaphoreMap.put(ApparatusType.BARBELL, BARBELL);
+		apparatusTypeSemaphoreMap.put(ApparatusType.HACKSQUATMACHINE, HACKSQUATMACHINE);
+		apparatusTypeSemaphoreMap.put(ApparatusType.LEGEXTENSIONMACHINE, LEGEXTENSIONMACHINE);
+		apparatusTypeSemaphoreMap.put(ApparatusType.LEGCURLMACHINE, LEGCURLMACHINE);
+		apparatusTypeSemaphoreMap.put(ApparatusType.LATPULLDOWNMACHINE, LATPULLDOWNMACHINE);
+		apparatusTypeSemaphoreMap.put(ApparatusType.PECDECKMACHINE, PECDECKMACHINE);
+		apparatusTypeSemaphoreMap.put(ApparatusType.CABLECROSSOVERMACHINE, CABLECROSSOVERMACHINE);
 		
 		r = new Random();
 		clients = new HashSet<Integer>();
 	}
 	
+	/**
+	 * Returns a static variable which is just a copy of noOfWeightPlates
+	 * In the assignment UML diagram, noOfWeightPlates is supposed to be private static,
+	 * which means that it cannot be accessed by other classes. 
+	 * However, Client.generateRandom() needs the Map to pass to Exercise.generateRandom() 
+	 * to know the keySpace. 
+	 * Therefore, I created a (public) static temp variable to that references noOfWeightPlates 
+	 * so it can be passed.
+	 * @return Map<WeightPlateSize, Integer>
+	 */
 	public static Map<WeightPlateSize, Integer> getNoOfWeightPlates(){
 		return tempNoOfWeightPlates;
 	}
