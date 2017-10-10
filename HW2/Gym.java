@@ -111,9 +111,10 @@ public class Gym implements Runnable {
 	public void run(){
 		// Thread pool
 		executor = Executors.newFixedThreadPool(GYM_SIZE);
+		Client client;
 		for(int i = 0; i < GYM_REGISTERED_CLIENTS; i++) {
 			// The gym should generate clients randomly and have them execute their routines.
-			Client client = Client.generateRandom(generateUniqueId(GYM_REGISTERED_CLIENTS));
+			client = Client.generateRandom(generateUniqueId(GYM_REGISTERED_CLIENTS));
 			executor.execute(client);
 		}
 		executor.shutdown();
