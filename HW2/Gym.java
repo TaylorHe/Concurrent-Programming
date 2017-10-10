@@ -82,6 +82,19 @@ public class Gym implements Runnable {
 	}
 	
 	/**
+	 * Generates a unique id not found in the clients HashSet
+	 * @param cap
+	 * @return
+	 */
+	private int generateUniqueId(int cap) {
+		int id = 0;
+		do {
+			id = r.nextInt(GYM_REGISTERED_CLIENTS) + 1;
+		} while(clients.contains(id));
+		return id;
+	}
+	
+	/**
 	 * Returns a static variable which is just a copy of noOfWeightPlates
 	 * In the assignment UML diagram, noOfWeightPlates is supposed to be private static,
 	 * which means that it cannot be accessed by other classes. 
@@ -98,14 +111,10 @@ public class Gym implements Runnable {
 	public void run(){
 		// Thread pool
 		executor = Executors.newFixedThreadPool(GYM_SIZE);
-		int id = 0;
 		for(int i = 0; i < GYM_REGISTERED_CLIENTS; i++) {
 			// The gym should generate clients randomly and have them execute their routines.
-			id = r.nextInt(GYM_REGISTERED_CLIENTS) + 1; 
-			if(clients.add(id)) {		// Check if random client ID is in the set
-				Client client = Client.generateRandom(id);
-				executor.execute(client);
-			}	
+			Client client = Client.generateRandom(generateUniqueId(GYM_REGISTERED_CLIENTS));
+			executor.execute(client);
 		}
 		executor.shutdown();
 	}
