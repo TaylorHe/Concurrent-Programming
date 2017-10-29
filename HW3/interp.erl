@@ -88,7 +88,18 @@ valueOf({letExp, IdVal, ValExp, InExp}, Env) ->
     {id, _, Id} = IdVal,
     valueOf(InExp, env:add(Env, Id, valueOf(ValExp, Env)));
 
+% procExp
+valueOf({procExp, IdVal, Exp}, Env) ->
+    {id, _, Id} = IdVal,
+    {proc, Id, Exp, Env};
 
+% For appExp, recurse on ProcID and find ValExp. Return the valueOf a letExp where 
+% IdVal = {id, 1, ProcExpId}, ValExp is ValExp's value, and ProcExp is the ProcExp of ProcId
+valueOf({appExp, ProcId, ValExp}, Env) ->
+    {proc, ProcExpId, ProcExp, ProcEnv} = valueOf(ProcId, Env),
+    ValExpVal = valueOf(ValExp, Env),
+    IdVal = {id, 1, ProcExpId}
+    valueOf({letExp, IdVal, ValExpVal, ProcExp}, ProcEnv).
 
 
 
