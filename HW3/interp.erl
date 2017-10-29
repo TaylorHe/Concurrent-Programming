@@ -80,7 +80,7 @@ valueOf({ifThenElseExp, Exp1, Exp2, Exp3}, Env) ->
        Exp1 == false ->
            valueOf(Exp3, Env);
        true ->
-           valueOf({ifThenElseExp, boolVal2Bool(valueOf(Exp1, Env)), Exp2, Exp3}, Env);
+           valueOf({ifThenElseExp, boolVal2Bool(valueOf(Exp1, Env)), Exp2, Exp3}, Env)
     end;
 
 % letExp has an Identifier which we need to store in the Env
@@ -98,7 +98,7 @@ valueOf({procExp, IdVal, Exp}, Env) ->
 valueOf({appExp, ProcId, ValExp}, Env) ->
     {proc, ProcExpId, ProcExp, ProcEnv} = valueOf(ProcId, Env),
     ValExpVal = valueOf(ValExp, Env),
-    IdVal = {id, 1, ProcExpId}
+    IdVal = {id, 1, ProcExpId},
     valueOf({letExp, IdVal, ValExpVal, ProcExp}, ProcEnv).
 
 
