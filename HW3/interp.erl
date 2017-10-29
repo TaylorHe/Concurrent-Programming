@@ -64,13 +64,31 @@ valueOf({diffExp, Exp1, Exp2}, Env) ->
     {num, N};
 
 % If it's a plusExp, calculate recursively and use numVal2Num defined above.
-valueOf({diffExp, Exp1, Exp2}, Env) ->
+valueOf({plusExp, Exp1, Exp2}, Env) ->
     N = numVal2Num(valueOf(Exp1, Env)) + numVal2Num(valueOf(Exp2, Env)),
     {num, N};
 
+% If it's a isZeroExp, calculate recursively and use numVal2Num defined above.
+valueOf({isZeroExp, Exp}, Env) ->
+    Val = (numVal2Num(valueOf(Exp, Env)) == 0),
+    {bool, Val};
 
-% 
-    %% complete
+% ifThenElseExp has some pattern matching
+valueOf({ifThenElseExp, Exp1, Exp2, Exp3}, Env) ->
+    if Exp1 == true ->
+           valueOf(Exp2, Env);
+       Exp1 == false ->
+           valueOf(Exp3, Env);
+       true ->
+           valueOf({ifThenElseExp, boolVal2Bool(valueOf(Exp1, Env)), Exp2, Exp3}, Env);
+    end;
+
+% letExp has an Identifier which we need to store in the Env
+valueOf({letExp, IdVal, ValExp, InExp}, Env) ->
+    {id, _, Id} = IdVal,
+    valueOf(InExp, env:add(Env, Id, valueOf(ValExp, Env)));
+
+
 
 
 
