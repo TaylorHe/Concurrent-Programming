@@ -2,7 +2,7 @@
 -export([start/0]).
 
 start() ->
-    lists:map(fun interp:runStr/1,examples()).
+    lists:map(fun interp:runStr/1, examples()).
 
 examples() ->
     [ex1(), ex2(), ex3(), ex4(), ex5(), ex6(), ex7(), ex8(), ex9()].

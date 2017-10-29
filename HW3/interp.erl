@@ -50,9 +50,17 @@ boolVal2Bool({bool, B}) ->
 
 -spec valueOf(expType(),envType()) -> valType().
 
-% If it's a numVal or a boolBal, return itself.
+% If it's a numVal or a boolVal, return itself.
+% If it's a numExp, return the N inside it.
 valueOf({num, N}, _Env) ->
     {num, N};
+
+valueOf({bool, B}, _Env) ->
+    {bool, B};
+    
+valueOf({numExp, {num, _, N}}, _Env) ->
+    {num, N};
+
 
 % If it's an Id Exp, lookup what it is
 valueOf({idExp, {id, _, Id}}, Env) ->
