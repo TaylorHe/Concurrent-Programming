@@ -49,6 +49,44 @@ boolVal2Bool({bool, B}) ->
     B.
 
 -spec valueOf(expType(),envType()) -> valType().
-valueOf(Exp,Env) ->
-    io:format("Not implemented!").
+
+% If it's a numVal or a boolBal, return itself.
+valueOf({num, N}, _Env) ->
+    {num, N};
+
+% If it's an Id Exp, lookup what it is
+valueOf({idExp, {id, _, Id}}, Env) ->
+    env:lookup(Env, Id);
+
+% If it's a diffExp, calculate recursively and use numVal2Num defined above.
+valueOf({diffExp, Exp1, Exp2}, Env) ->
+    N = numVal2Num(valueOf(Exp1, Env)) - numVal2Num(valueOf(Exp2, Env)),
+    {num, N};
+
+% If it's a plusExp, calculate recursively and use numVal2Num defined above.
+valueOf({diffExp, Exp1, Exp2}, Env) ->
+    N = numVal2Num(valueOf(Exp1, Env)) + numVal2Num(valueOf(Exp2, Env)),
+    {num, N};
+
+
+% 
     %% complete
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
