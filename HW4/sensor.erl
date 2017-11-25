@@ -1,13 +1,14 @@
 -module(sensor).
 -compile(export_all).
 
-sensor(From, Id) ->
+sense(From, ID) ->
 	Measurement = rand:uniform(11),
 	if Measurement == 11 ->
-		exit({anomalous_reading});
+		From!{ID, "anomalous_reading"},
+		exit({"anomalous_reading"});
 	true ->
-		From!{Id, Measurement}
+		From!{ID, Measurement}
 	end,
 	Sleep_time = rand:uniform(10000),
 	timer:sleep(Sleep_time),
-	sensor(From, Id).
+	sense(From, ID).
