@@ -1,5 +1,5 @@
 -module(watcher).
--export([new/1]).
+-compile(export_all).
 
 % User uses this
 new(WatchNum) ->
@@ -25,22 +25,25 @@ new_spawn(WatchNum, CurrNum) ->
 watcher(WatchNum, CurrNum)->
     PidList = spawn_sensors(WatchNum, CurrNum, []),
     io:fwrite("Starting watcher: ~p~n", [PidList]),
-    watcher_loop(PidList).
+    watcher_loop(self(), PidList).
 
 % Receive and handle errors
-watcher_loop(PidList) ->
+watcher_loop(WID, PidList) ->
     receive
         % If anomalous reading, restart Sensor with SensorID: ID
-        {ID, "anomalous_reading"} ->
-            io:fwrite("Sensor ~p has crashed due to: ~p... Restarting...~n", [ID, "anomalous_reading"]);
-
-        {ID, Measurement} ->
-            io:fwrite("Sensor ~p reported a measurement of: ~p~n",[ID, Measurement])
+        {SensorID, "anomalous_reading"} ->
+            io:fwrite("Sensor ~p has crashed due to: ~p. Restarting...~n", [SensorID, "anomalous_reading"]),
+            {PID, _} = spawn_monitor(sensor, sense, [self(), SensorID]),
+            NewPidList = lists:keyreplace(SensorID, 1, PidList, {SensorID, PID}),
+            io:fwrite("Watcher ~p has new sensor list ~p~n", [WID, NewPidList]);
+        {SensorID, Measurement} ->
+            io:fwrite("Sensor ~p reported a measurement of: ~p~n",[SensorID, Measurement]),
+            NewPidList = PidList
     end,
-    watcher_loop(PidList).
+    watcher_loop(WID, NewPidList).
 
 % Spawn the sensors using spawn_monitor
-spawn_sensors(0, CurrNum, PidList) ->
+spawn_sensors(0, _, PidList) ->
     PidList;
 spawn_sensors(NumSensors, CurrNum, PidList) ->
     {Pid, _} = spawn_monitor(sensor, sense, [self(), CurrNum]),
