@@ -1,11 +1,13 @@
+% Taylor He
+% I pledge my honor that I have abided by the Stevens Honor System.
 -module(sensor).
--compile(export_all).
+-export([sense/2]).
 
 sense(From, ID) ->
 	Measurement = rand:uniform(11),
 	if Measurement == 11 ->
 		From!{ID, "anomalous_reading"},
-		exit({"anomalous_reading"});
+		exit(anomalous_reading);
 	true ->
 		From!{ID, Measurement}
 	end,
